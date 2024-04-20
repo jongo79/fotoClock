@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+
+    <title>Image Clock</title>
+    <style>
+        /* Center the time display */
+        #current-time {
+            font-size: 16px;
+            font-family: monospace;
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 40px;
+        }
+
+        /* Style the images */
+        .image-row {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .image {
+            margin: 5px;
+        }
+
+        /* Set different sizes for different images */
+        .second-image {
+            width: 100px;
+            height: 100px;
+        }
+
+        .minute-image {
+            width: 150px;
+            height: 150px;
+        }
+
+        .hour-image {
+            width: 200px;
+            height: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Container for current time display -->
+    <div id="current-time"></div>
+    <div style="color: blue; font-family: 'Press Start 2P', Courier, monospace; font-size: 8px;">
+        <p>JGF</p>
+    </div>
+    <div style="color: rgb(114, 114, 253); font-family: 'Press Start 2P', Courier, monospace; font-size: 6px;">
+        <p>fotoClock</p>
+    </div>
+    <!-- Container for image rows -->
+    <div id="image-container">
+        <!-- Image rows will be dynamically added here -->
+    </div>
+
+    <script>
+        // Function to display the current time
+        function displayCurrentTime() {
+            const now = new Date();
+            const hours = ('0' + now.getHours()).slice(-2); // Get hours with leading zero
+            const minutes = ('0' + now.getMinutes()).slice(-2); // Get minutes with leading zero
+            const seconds = ('0' + now.getSeconds()).slice(-2); // Get seconds with leading zero
+            const currentTime = hours + ':' + minutes + ':' + seconds; // Format time as HH:MM:SS
+            document.getElementById('current-time').textContent = currentTime; // Update time display
+        }
+
+        // Call the displayCurrentTime function every second
+        setInterval(displayCurrentTime, 1000);
+
+        // Function to display images at different intervals
+        function displayImagesAtIntervals() {
+            // Get the current time
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+
+            // Display a small image every second
+            if (seconds % 1 === 0) {
+                displayRandomImage('second-image-row', 'second-image');
+            }
+
+            // Display a medium image every minute
+            if (seconds === 0 && minutes % 1 === 0) {
+                displayRandomImage('minute-image-row', 'minute-image');
+            }
+
+            // Display a large image every hour
+            if (seconds === 0 && minutes === 0 && hours % 1 === 0) {
+                displayRandomImage('hour-image-row', 'hour-image');
+            }
+        }
+
+        // Function to display a random image
+        function displayRandomImage(rowId, className) {
+            // Generate a random cache buster value to prevent caching
+            const cacheBuster = Math.random().toString(36).substring(7);
+            // Construct the image URL with a random size and cache buster parameter
+            const imageUrl = 'https://picsum.photos/200?' + cacheBuster;
+            // Create an image element
+            const img = document.createElement('img');
+            // Set the image source to the generated URL
+            img.src = imageUrl;
+            // Add the specified class to the image
+            img.className = 'image ' + className;
+
+            // Find the image container element for the specified row
+            let container = document.getElementById(rowId);
+
+            // If the container doesn't exist, create it
+            if (!container) {
+                container = document.createElement('div');
+                container.id = rowId;
+                container.className = 'image-row';
+                document.getElementById('image-container').appendChild(container);
+            }
+
+            // Append the image to the container
+            container.appendChild(img);
+        }
+
+        // Start the slideshow
+        displayImagesAtIntervals(); // Display images initially
+        setInterval(displayImagesAtIntervals, 1000); // Update images every second
+    </script>
+</body>
+
+</html>

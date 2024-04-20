@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Random Image Viewer</title>
+    <style>
+        /* Center the container */
+        #button-container {
+            text-align: center;
+        }
+
+        /* Display buttons and time display in one line */
+        #button-container button,
+        #button-container input[type="text"],
+        #button-container select {
+            display: inline-block;
+            margin: 0 10px;
+            /* Add margin between elements */
+            background-color: aliceblue;
+        }
+
+        /* Set container width to 100% of viewport width */
+        #image-container {
+            width: 100vw;
+            height: 100vh;
+            /* Set height to 100% of viewport height */
+            position: relative;
+            overflow: hidden; /* Hide overflow to prevent scrollbars */
+            background-color: black; /* Set background color to black */
+        }
+
+        .image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain; /* Ensure the image fits within the container */
+            animation: kenburns 10s infinite alternate; /* Apply Ken Burns effect */
+        }
+
+        /* Keyframes for Ken Burns effect */
+        @keyframes kenburns {
+            0% {
+                transform: scale(1);
+            }
+            100% {
+                transform: scale(1.1);
+            }
+        }
+
+        /* Center the time display */
+        #current-time {
+            font-size: 16px;
+            /* Increase font size for better visibility */
+            font-family: monospace;
+            /* Use monospace font for consistent width */
+            text-align: center;
+            /* Center the time display */
+            margin-bottom: 20px;
+            /* Add some margin below the time display */
+            margin-top: 10px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <!-- Container for buttons and time display -->
+    <div id="button-container">
+        <!-- Select for time interval -->
+        <label for="time-interval">Time Interval:</label>
+        <select id="time-interval" onchange="updateInterval()">
+            <option value="1">1 Second</option>
+            <option value="2">2 Seconds</option>
+            <option value="3">3 Seconds</option>
+            <option value="4">4 Seconds</option>
+            <option value="5">5 Seconds</option>
+            <option value="10">10 Seconds</option>
+        </select>
+        <!-- Button to start/stop slideshow -->
+        <button id="slideshow-button" onclick="toggleSlideshow()">Start Slideshow</button>
+        <!-- Button to toggle fullscreen mode -->
+        <button id="fullscreen-button" onclick="toggleFullscreen()">Go Fullscreen</button>
+    </div>
+    <!-- Container for current time display -->
+    <div id="current-time"></div>
+
+    <!-- Container for the image -->
+    <div id="image-container"></div>
+
+    <script>
+        let slideshowInterval; // Variable to store interval ID for slideshow
+        let slideshowRunning = false; // Variable to track slideshow state
+
+        // Function to update the time interval for the slideshow
+        function updateInterval() {
+            // Restart the slideshow with the new interval
+            clearInterval(slideshowInterval); // Clear previous interval
+            startSlideshow(); // Start the slideshow with the new interval
+        }
+
+        // Function to start the slideshow
+        function startSlideshow() {
+            // Get the selected time interval value
+            const interval = parseInt(document.getElementById('time-interval').value);
+            // Start the slideshow with the selected interval
+            slideshowInterval = setInterval(fetchAndDisplayRandomImage, interval * 1000);
+        }
+
+        // Function to fetch a random image URL from the Picsum Photos API
+        async function fetchRandomImageUrl() {
+            try {
+                // Generate a random cache buster value to prevent caching
+                const cacheBuster = Math.random().toString(36).substring(7);
+                // Construct the image URL with the cache buster parameter
+                const imageUrl = `https://picsum.photos/1920/1080?${cacheBuster}`;
+                return imageUrl;
+            } catch (error) {
+                console.error('Error fetching image URL:', error);
+                throw error; // Rethrow the error to handle it externally
+            }
+        }
+
+        // Function to fetch and display a random image
+        async function fetchAndDisplayRandomImage() {
+            try {
+                // Fetch a random image URL
+                const imageUrl = await fetchRandomImageUrl();
+                // Create an image element
+                const img = document.createElement('img');
+                // Set the source of the image
+                img.src = imageUrl;
+                // Add the 'image' class to apply the Ken Burns effect
+                img.classList.add('image');
+                // Get the container for the image
+                const container = document.getElementById('image-container');
+                // Clear the container before adding a new image
+                container.innerHTML = '';
+                // Append the image to the container
+                container.appendChild(img);
+            } catch (error) {
+                console.error('Error fetching and displaying random image:', error);
+            }
+        }
+
+        // Function to toggle fullscreen mode
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                // Enter fullscreen mode
+                document.documentElement.requestFullscreen();
+            } else {
+                // Exit fullscreen mode
+                document.exitFullscreen();
+            }
+        }
+
+        // Function to fetch the first image and start the slideshow
+        async function fetchFirstImageAndStartSlideshow() {
+            try {
+                // Fetch a random image URL for the first image
+                const firstImageUrl = await fetchRandomImageUrl();
+                // Create an image element for the first image
+                const firstImg = new Image();
+                // Set the source of the first image
+                firstImg.src = firstImageUrl;
+                // Add the 'image' class to apply the Ken Burns effect
+                firstImg.classList.add('image');
+                // Get the container for the first image
+                const container = document.getElementById('image-container');
+                // Clear the container before adding the first image
+                container.innerHTML = '';
+                // Append the first image to the container
+                container.appendChild(firstImg);
+                // Start the slideshow after displaying the first image
+                startSlideshow();
+            } catch (error) {
+                console.error('Error fetching and displaying the first image:', error);
+            }
+        }
+
+        // Call the fetchFirstImageAndStartSlideshow function to fetch the first image and start the slideshow
+        fetchFirstImageAndStartSlideshow();
+
+        // Function to display the current time
+        function displayCurrentTime() {
+            const now = new Date();
+            const hours = ('0' + now.getHours()).slice(-2); // Get hours with leading zero
+            const minutes = ('0' + now.getMinutes()).slice(-2); // Get minutes with leading zero
+            const seconds = ('0' + now.getSeconds()).slice(-2); // Get seconds with leading zero
+            const currentTime = hours + ':' + minutes + ':' + seconds; // Format time as HH:MM:SS
+            document.getElementById('current-time').textContent = currentTime; // Update time display
+        }
+
+        // Call the displayCurrentTime function every second
+        setInterval(displayCurrentTime, 1000);
+    </script>
+</body>
+
+</html>
